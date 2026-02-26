@@ -1,0 +1,38 @@
+name: Weekly Python Script
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Runs every Sunday at 00:00 UTC
+  workflow_dispatch:     # Allows manual run from GitHub UI
+
+permissions:
+  contents: write
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "261533617+WynnMicroTools@users.noreply.github.com"
+      
+      - name: Run script
+        run: python script.py
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Automated update" || echo "No changes to commit"
+          git push
