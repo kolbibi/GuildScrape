@@ -649,7 +649,7 @@ def main():
     html_ = f"""
     <html>
     <head>
-    <title>My Graph Page</title>
+    <title>GuildScrape</title>
     </head>
     <body>
     <h1>Performance Rankings</h1>
