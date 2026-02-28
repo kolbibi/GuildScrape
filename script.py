@@ -63,7 +63,7 @@ def main():
         time.sleep(2)
     incognito = []
     for member in sorted(member_stats.keys()):
-        if "playtime" in member_stats[member]:
+        if not member_stats[member]['restrictions']['mainAccess'] and not member_stats[member]['restrictions']['onlineStatus']:
             # print(f"{member}: {member_stats[member]["playtime"]} {member_stats[member]["restrictions"]}")
             # print(f"{member_stats[member]['username']}: {member_stats[member]['restrictions']}")
             pass
