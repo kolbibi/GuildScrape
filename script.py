@@ -571,20 +571,29 @@ def main():
     import html
 
     def make_table(pairs, value_label):
-        rows = "\n".join(
-            f"<tr><td>{html.escape(str(k))}</td><td>{html.escape(str(round(v, 2)))}</td></tr>"
-            for k, v in pairs
-        )
-
+        i = 0
+        rows = []
+        for k, v, rank in pairs:
+            is_exempt = rank.lower() in ('chief', 'owner')
+            if not is_exempt:
+                i += 1
+            position = 'N/A' if is_exempt else i
+            adjusted_v = round(v if is_exempt else v + 1, 2)
+            rows.append(
+                f"<tr><td>{position}</td><td>{html.escape(str(k))}</td><td>{html.escape(str(adjusted_v))}</td><td>{html.escape(str(rank))}</td></tr>"
+            )
+        rows = "\n".join(rows)
         return f"""
-        <table border="1" style="border-collapse: collapse; font-size: 14px;">
-            <tr>
-                <th>Username</th>
-                <th>{html.escape(str(value_label))}</th>
-            </tr>
-            {rows}
-        </table>
-        """
+<table border="1" style="border-collapse: collapse; font-size: 14px;">
+    <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>{html.escape(str(value_label))}</th>
+        <th>Rank</th>
+    </tr>
+{rows}
+</table>
+"""
 
 
     def full_field_dropdown(field, asc_weekly, asc_monthly, desc_weekly, desc_monthly):
@@ -631,16 +640,16 @@ def main():
     # # money_made_for_guild_monthly_tables = ""
     # money_made_for_guild_monthly = sorted([(monthly_data[uuid]["username"], (3 * monthly_data[uuid]["graids"] + monthly_data[uuid]["wars"])/4) for uuid in monthly_data], key=lambda x: x[1], reverse=True)
     for field in numeric_fields:
-        asc_weekly = sorted([(weekly_data[uuid]["username"], weekly_data[uuid][field]) for uuid in weekly_data], key=lambda x: x[1], reverse=True)
-        asc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field]) for uuid in monthly_data], key=lambda x: x[1], reverse=True)
-        desc_weekly = sorted([(weekly_data[uuid]["username"], weekly_data[uuid][field]) for uuid in weekly_data], key=lambda x: x[1], reverse=False)
-        desc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field]) for uuid in monthly_data], key=lambda x: x[1], reverse=False)
+        asc_weekly = sorted([(weekly_data[uuid]["username"], weekly_data[uuid][field], weekly_data[uuid]['rank']) for uuid in weekly_data], key=lambda x: x[1], reverse=True)
+        asc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field], monthly_data[uuid]['rank']) for uuid in monthly_data], key=lambda x: x[1], reverse=True)
+        desc_weekly = sorted([(weekly_data[uuid]["username"], weekly_data[uuid][field], weekly_data[uuid]['rank']) for uuid in weekly_data], key=lambda x: x[1], reverse=False)
+        desc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field], monthly_data[uuid]['rank']) for uuid in monthly_data], key=lambda x: x[1], reverse=False)
         all_tables_html += full_field_dropdown(
             field,
-            asc_weekly[:20],
-            asc_monthly[:20],
-            desc_weekly[:20],
-            desc_monthly[:20]
+            asc_weekly[:30],
+            asc_monthly[:30],
+            desc_weekly[:30],
+            desc_monthly[:30]
         )
     if not monthly_data:
         month_date = "Not yet collected"
@@ -653,6 +662,7 @@ def main():
     </head>
     <body>
     <h1>Performance Rankings</h1>
+    <p><strong>**Chiefs and Owner not eligible for rewards**</strong></p>
     <p>Warning icognito players: {[member_stats[uuid]['username'] for uuid in incognito]}</p>
     <p>** Monthly data last collected: {month_date} Year/Month/Day/H/M/S format</p>
     <p>** Weekly data collected last collected: {formatted} Year/Month/Day/H/M/S format</p>
