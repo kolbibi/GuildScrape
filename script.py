@@ -578,7 +578,7 @@ def main():
             if not is_exempt:
                 i += 1
             position = 'N/A' if is_exempt else i
-            adjusted_v = round(v if is_exempt else v + 1, 2)
+            adjusted_v = round(v, 2)
             rows.append(
                 f"<tr><td>{position}</td><td>{html.escape(str(k))}</td><td>{html.escape(str(adjusted_v))}</td><td>{html.escape(str(rank))}</td></tr>"
             )
