@@ -135,7 +135,7 @@ def main():
         # formatted = "2026-03-08T00:00:23.653376Z"
         # print(json.dumps(player_data[player], 2))
         
-        if len(player_data[player]) > 1 and dates[-1]==formatted and 7<= round(subtract_date_string(dates[-1], dates[-2]), 0) <= 10:
+        if len(player_data[player]) > 1 and dates[-1]==formatted and 4<= round(subtract_date_string(dates[-1], dates[-2]), 0) <= 10:
             # print(f"Got to weekly: {player_data[player][-1]['username']}")
             weekly_data[player] = {
                 "date": formatted,
@@ -169,7 +169,7 @@ def main():
             print(f"oldest_this_month_div: {round(subtract_date_string(dates[-oldest_this_month], formatted),0)}")
             print(f"start_day_to_today_formatted: {round(subtract_date_string(start_day, formatted),0)}")
         
-        if len(player_data[player]) > 2 and 28 <= round(subtract_date_string(dates[-oldest_this_month], formatted),0) <= 31  and round(subtract_date_string(start_day, formatted),0)%28 <= 3:
+        if len(player_data[player]) > 2 and 25 <= round(subtract_date_string(dates[-oldest_this_month], formatted),0) <= 31  and round(subtract_date_string(start_day, formatted),0)%28 <= 3:
             month_stats = {
                 "date": formatted,
                 "username": player_data[player][-1]['username'], 
