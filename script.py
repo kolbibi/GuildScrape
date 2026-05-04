@@ -92,8 +92,8 @@ def main():
             # print(member['globalData']['guildRaids'])
             # print(member['globalData']['raids'])
             # print([member['globalData']['guildRaids'][raid] for raid in member['globalData']['guildRaids']])
-            days_last_joined =  now_utc - datetime.strptime(member['lastJoin'], time_format).replace(tzinfo=timezone.utc)
-            stats = [formatted, uuid, member['guild']['rank'],member["username"], member['lastJoin'], 
+            days_last_joined =  now_utc - datetime.strptime((member.get('lastJoin') or "1959-05-03T21:47:01.317000Z"), time_format).replace(tzinfo=timezone.utc)
+            stats = [formatted, uuid, (member.get('guild') or {'rank': 'RECRUIT'})['rank'],member["username"], (member.get('lastJoin') or "1959-05-03T21:47:01.317000Z"), 
                     round(days_last_joined.total_seconds()/60/60/24, 3) ,member['playtime'], member['globalData']["wars"], member['globalData']['guildRaids']['total'],
                     member['globalData']['lootruns'], member['globalData']["raids"]['total'], member["globalData"]['totalLevel'], member['globalData']['contentCompletion']]
             # print(stats)
