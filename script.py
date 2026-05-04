@@ -137,6 +137,7 @@ def main():
         
         if len(player_data[player]) > 1 and dates[-1]==formatted and 4<= round(subtract_date_string(dates[-1], dates[-2]), 0) <= 10:
             # print(f"Got to weekly: {player_data[player][-1]['username']}")
+           
             weekly_data[player] = {
                 "date": formatted,
                 "username": player_data[player][-1]['username'], 
