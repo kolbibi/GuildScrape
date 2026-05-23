@@ -4,6 +4,7 @@ import time
 import csv
 import sys
 from datetime import datetime, timezone
+import os
 def main():
     start_day = "2026-03-01T00:00:00.000000Z"
 
@@ -30,7 +31,8 @@ def main():
             self.headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                         "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/116.0.5845.97 Safari/537.36"
+                        "Chrome/116.0.5845.97 Safari/537.36",
+                "Authorization": f"Bearer {os.environ.get('API_TOKEN')}"
             }
         def get(self, url):
             req = Request(url, headers=self.headers)
@@ -40,8 +42,10 @@ def main():
                 text = data.decode(encoding)
                 return Response(text, response.getcode(), dict(response.info()))
     requests = Requests()
+    tomes = {}
     guild_req = requests.get(guild_url + guild_name)
     guild_data = guild_req.json()
+
     # print(guild_data["members"])
     all_members = []
     guild_break_username = {}
@@ -53,6 +57,8 @@ def main():
         guild_break_username[key] = []
         for member in guild_data['members'][key]:
             guild_break_username[key].append(member)
+            if guild_data['members'][key][member].get('weekly', False) and guild_data['members'][key][member]['weekly']['completed'] and guild_data['members'][key][member]['weekly']['streak']%5==0:
+                tomes[member] = guild_data['members'][key][member]['weekly']
             guild_break_down[key].append(guild_data['members'][key][member]['uuid'])
             all_members.append(guild_data['members'][key][member]['uuid'])
     member_stats = {}
@@ -595,6 +601,28 @@ def main():
 {rows}
 </table>
 """
+    def weeklies_table(tomes):
+        i = 0
+        rows = []
+        for player in tomes.keys():
+            
+            i += 1
+            position = i
+            rows.append(
+                f"<tr><td>{position}</td><td>{html.escape(player)}</td><td>{html.escape(str(tomes[player]['streak']))}</td></tr>"
+            )
+        rows = "\n".join(rows)
+        return f"""
+<table border="1" style="border-collapse: collapse; font-size: 14px;">
+    <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>{html.escape(str("Weeklies"))}</th>
+        <th>Rank</th>
+    </tr>
+{rows}
+</table>
+"""
 
 
     def full_field_dropdown(field, asc_weekly, asc_monthly, desc_weekly, desc_monthly):
@@ -634,6 +662,70 @@ def main():
             </div>
         </details>
         """
+    def graid_make_table(pairs, value_label):
+        i = 0
+        rows = []
+        for k, v, rank in pairs:
+            is_exempt = rank.lower() in ('chief', 'owner')
+            if not is_exempt:
+                i += 1
+            position = 'N/A' if is_exempt else i
+            
+            rows.append(
+                f"<tr><td>{position}</td><td>{html.escape(str(k))}</td><td>{html.escape(str(v))}</td><td>{html.escape(str(rank))}</td><td>{v*512//(64*64)}</td></tr>"
+            )
+        rows = "\n".join(rows)
+        return f"""
+<table border="1" style="border-collapse: collapse; font-size: 14px;">
+    <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>{html.escape(str(value_label))}</th>
+        <th>Rank</th>
+        <th>LE Generated</th>
+    </tr>
+{rows}
+</table>
+"""
+
+
+    def graid_full_field_dropdown(field, asc_weekly, asc_monthly, desc_weekly, desc_monthly):
+        return f"""
+        <details style="margin-bottom: 30px;">
+            <summary style="font-size: 20px; font-weight: bold; cursor: pointer;">
+                {html.escape(field)}
+            </summary>
+
+            <div style="
+                margin-top: 15px;
+                display: flex;
+                gap: 25px;
+                flex-wrap: nowrap;
+            ">
+
+                <div>
+                    <h4>Top Weekly</h4>
+                    {graid_make_table(asc_weekly, field)}
+                </div>
+
+                <div>
+                    <h4>Top Monthly</h4>
+                    {graid_make_table(asc_monthly, field)}
+                </div>
+
+                <div>
+                    <h4>Lowest Weekly</h4>
+                    {graid_make_table(desc_weekly, field)}
+                </div>
+
+                <div>
+                    <h4>Lowest Monthly</h4>
+                    {graid_make_table(desc_monthly, field)}
+                </div>
+
+            </div>
+        </details>
+        """
 
     all_tables_html = ""
     # money_made_for_guild_weekly_tables = ""
@@ -645,13 +737,21 @@ def main():
         asc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field], monthly_data[uuid]['rank']) for uuid in monthly_data], key=lambda x: x[1], reverse=True)
         desc_weekly = sorted([(weekly_data[uuid]["username"], weekly_data[uuid][field], weekly_data[uuid]['rank']) for uuid in weekly_data], key=lambda x: x[1], reverse=False)
         desc_monthly = sorted([(monthly_data[uuid]["username"], monthly_data[uuid][field], monthly_data[uuid]['rank']) for uuid in monthly_data], key=lambda x: x[1], reverse=False)
-        all_tables_html += full_field_dropdown(
-            field,
-            asc_weekly[:30],
-            asc_monthly[:30],
-            desc_weekly[:30],
-            desc_monthly[:30]
-        )
+        if field == "graids":
+            all_tables_html += graid_full_field_dropdown(field, 
+                asc_weekly[:30],
+                asc_monthly[:30],
+                desc_weekly[:30],
+                desc_monthly[:30]
+                )
+        else:
+            all_tables_html += full_field_dropdown(
+                field,
+                asc_weekly[:30],
+                asc_monthly[:30],
+                desc_weekly[:30],
+                desc_monthly[:30]
+            )
     if not monthly_data:
         month_date = "Not yet collected"
     else:
@@ -665,8 +765,11 @@ def main():
     <h1>Performance Rankings</h1>
     <p><strong>**Chiefs and Owner not eligible for rewards**</strong></p>
     <p>Warning icognito players: {[member_stats[uuid]['username'] for uuid in incognito]}</p>
+    <br/>
     <p>** Monthly data last collected: {month_date} Year/Month/Day/H/M/S format</p>
     <p>** Weekly data collected last collected: {formatted} Year/Month/Day/H/M/S format</p>
+    <h2>Weekly's Tome Winners</h2>
+    {weeklies_table(tomes, )}
     {all_tables_html}
     <div style="display: flex; flex-direction: row">
         <h1 style="width: 50%">Weekly Graphs</h1>
