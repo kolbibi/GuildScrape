@@ -18,7 +18,7 @@ def main():
     guild_url = start_url + "guild/"
     weekly_csv_file = "./weekly_data.csv"
     monthly_csv_file = "./monthly_data.csv"
-
+    api_token = os.environ.get("API_TOKEN")
     class Response:
         def __init__(self, text, status_code, headers):
             self.text = text
@@ -32,7 +32,7 @@ def main():
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                         "AppleWebKit/537.36 (KHTML, like Gecko) "
                         "Chrome/116.0.5845.97 Safari/537.36",
-                "Authorization": f"Bearer {os.environ.get('API_TOKEN')}"
+                "Authorization": f"Bearer {api_token}"
             }
         def get(self, url):
             req = Request(url, headers=self.headers)

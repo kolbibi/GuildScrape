@@ -29,6 +29,8 @@ jobs:
           git config --global user.email "261533617+WynnMicroTools@users.noreply.github.com"
       
       - name: Run script
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: python script.py
 
       - name: Commit and push changes
