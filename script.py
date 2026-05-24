@@ -6,8 +6,8 @@ import sys
 from datetime import datetime, timezone
 import os
 
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 def main():
     start_day = "2026-03-01T00:00:00.000000Z"
