@@ -5,6 +5,10 @@ import csv
 import sys
 from datetime import datetime, timezone
 import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 def main():
     start_day = "2026-03-01T00:00:00.000000Z"
 
@@ -175,8 +179,8 @@ def main():
             # print(round(subtract_date_string(start_day, formatted),0))
             print(f"oldest_this_month_div: {round(subtract_date_string(dates[-oldest_this_month], formatted),0)}")
             print(f"start_day_to_today_formatted: {round(subtract_date_string(start_day, formatted),0)}")
-        
-        if len(player_data[player]) > 2 and 25 <= round(subtract_date_string(dates[-oldest_this_month], formatted),0) <= 31  and round(subtract_date_string(start_day, formatted),0)%28 <= 3:
+        # 25 <= round(subtract_date_string(dates[-oldest_this_month], formatted),0) <= 31 
+        if len(player_data[player]) > 1 and abs(round(subtract_date_string(start_day, formatted),0))%28 <= 3:
             month_stats = {
                 "date": formatted,
                 "username": player_data[player][-1]['username'], 
@@ -618,7 +622,6 @@ def main():
         <th>#</th>
         <th>Username</th>
         <th>{html.escape(str("Weeklies"))}</th>
-        <th>Rank</th>
     </tr>
 {rows}
 </table>
